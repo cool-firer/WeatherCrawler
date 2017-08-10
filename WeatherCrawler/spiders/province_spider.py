@@ -1,8 +1,8 @@
 # coding:  utf8
 
 import scrapy
-import json
-import constant
+import WeatherCrawler.spiders.constant as constant
+from WeatherCrawler.db.mongo_db import MongoDB
 
 class ProvinceSpider(scrapy.Spider):
     '''
@@ -11,6 +11,10 @@ class ProvinceSpider(scrapy.Spider):
     name = 'province_spider'
     allowed_domains = ['weather.com.cn']
     start_urls = ['http://www.weather.com.cn/province/']
+    
+    def __init__(self):
+        super(ProvinceSpider, self).__init__()
+        self.db = MongoDB()
 
     def parse(self, response):
         '''
@@ -110,5 +114,13 @@ class ProvinceSpider(scrapy.Spider):
             })
         self.logger.info("========province:%s=======city:%s========county:%s", meta['province'], meta['city'], meta.get('county', None))
         self.logger.info(seven_day_weather)
+
+        data = {
+            'province': meta['province'],
+            'city': meta['city'],
+            'county': meta['county'],
+            'data': seven_day_weather
+        }
+        self.db.insert('weather', 'wea', data)
 
         

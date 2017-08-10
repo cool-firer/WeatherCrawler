@@ -27,6 +27,16 @@ class MongoDB(object):
                 Lock.release()
         return cls.__instance
 
+    def insert(self, database, collection, data):
+        '''
+            @param database: 数据库名称
+            @param collection: 集合
+            @param data: 数据
+        '''
+        db = self.client[database]
+        c = db[collection]
+        c.insert_one(data)
+
     def query(self, sql, params=None):
         pass
 
