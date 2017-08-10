@@ -1,5 +1,5 @@
 # WeatherCrawler
-爬取天气数据的爬虫
+爬取天气数据的爬虫，会抓取从今天之后的七天天气数据
 
 运行之前，确保已经安装scrapy、mongodb
 
