@@ -22,7 +22,7 @@ class ProvinceSpider(scrapy.Spider):
             if name not in constant.PIG_ZONE:
                 provinces.append({
                     'url': li.xpath('a/@href').extract_first(),
-                    'province': li.xpath('.//text()').extract_first()
+                    'province': name
                 })
         for p in provinces:
             yield scrapy.Request(p['url'], callback=self.parse_city, meta=p)
@@ -38,9 +38,9 @@ class ProvinceSpider(scrapy.Spider):
         for a in response.xpath('//div[@class="navbox"]/span/a'):
             cities.append({
                 'url': response.urljoin(a.xpath('@href').extract_first()),
-                'city': a.xpath('..//text()').extract_first()
+                'city': a.xpath('.//text()').extract_first()
             })
-        
+        self.logger.info("responseurl: %s   cities:%s", response.url, cities)
         for c in cities:
             yield scrapy.Request(c['url'], callback=self.parse_county, meta={
                 'province': province_info['province'],
@@ -56,23 +56,59 @@ class ProvinceSpider(scrapy.Spider):
         # 如果是直辖市, 没有下级县, 直接解析天气数据
         if city_info['province'] in constant.DIRECT_CITY:
             self.parse_direct_weather(response, city_info)
-        '''
+        
         else:
             counties = []
             for a in response.xpath('//div[@class="navbox"]/span/a'):
                 counties.append({
-                    'url': a.xpath('@href').extract_first(),
-                    'county': a.xpath('..//text()').extract_first()
+                    'url': response.urljoin(a.xpath('@href').extract_first()),
+                    'county': a.xpath('.//text()').extract_first()
                 })
             for c in counties:
-                yield scrapy.Request(c['url'], callable=self.parse_weather)
+                city_info['county'] = c['county']
+                yield scrapy.Request(c['url'], callback=self.parse_county_weather, meta=city_info)
+        
+    def parse_county_weather(self, response):
         '''
-    def parse_weather(self, response):
+            解析县天气数据
         '''
-            解析天气数据
-        '''
-        print response.url
+        meta = response.meta
+        self._parse_weather(response, meta)
 
 
     def parse_direct_weather(self, response, meta):
-        self.logger.info('provicince:%s, city:%s', meta['province'], meta['city'])
+        '''
+            解析直辖市天气数据
+        '''
+        #self.logger.info('provicince:%s, city:%s', meta['province'], meta['city'])
+        self._parse_weather(response, meta)
+
+
+    def _parse_weather(self, response, meta):
+        seven_day_weather = []
+        for li in response.xpath('//div[@id="7d"]/ul[@class="t clearfix"]/li'):
+            # 相对日期
+            h1 = li.xpath('./h1/text()').extract_first()
+            # 描述
+            desc = li.xpath('./p[@class="wea"]/text()').extract_first()
+            # 最高、低温度
+            max_tem = li.xpath('./p[@class="tem"]/span/text()').extract_first()
+            min_tem = li.xpath('./p[@class="tem"]/i/text()').extract_first()
+            # 风向
+            wind_direction = li.xpath('.//em/span/@title').extract()
+            # 风力 可能会有隐患
+            wf = li.xpath('.//i/text()').extract()
+            wind_force = wf[-1] if len(wf) >= 2 else 'unkonw'
+
+            seven_day_weather.append({
+                'day': h1,
+                'desc': desc,
+                'max_tem': max_tem,
+                'min_tem': min_tem,
+                'wind_direction': wind_direction,
+                'wind_force': wind_force
+            })
+        self.logger.info("========province:%s=======city:%s========county:%s", meta['province'], meta['city'], meta.get('county', None))
+        self.logger.info(seven_day_weather)
+
+        
