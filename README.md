@@ -9,6 +9,10 @@
 # 运行爬虫
 <code>scrapy crawl province_spider</code>
 
+或者指定日志级别的方式启动：
+
+<code>scrapy crawl province_spider --loglevel INFO</code>
+
 会依次从各省、市、县爬取天气数据，存入数据库，最终的数据如下：
 <pre><code>
 weather> db.wea.findOne()
