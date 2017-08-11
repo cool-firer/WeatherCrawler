@@ -38,14 +38,20 @@ class ProvinceSpider(scrapy.Spider):
         '''
         # 上级省/直辖市
         province_info = response.meta
-        
+
         cities = []
         for a in response.xpath('//div[@class="navbox"]/span/a'):
             cities.append({
                 'url': response.urljoin(a.xpath('@href').extract_first()),
                 'city': a.xpath('.//text()').extract_first()
             })
-        self.logger.info("responseurl: %s   cities:%s", response.url, cities)
+        # shirt, 广东省的主页样式不一样
+        if not cities:
+            for a in response.xpath('//div[@class="area_Weather"]/ul/li'):
+                cities.append({
+                    'url': response.urljoin(a.xpath('./a/@href').extract_first()),
+                    'city': a.xpath('./a/text()').extract_first()
+                })
         for c in cities:
             yield scrapy.Request(c['url'], callback=self.parse_county, meta={
                 'province': province_info['province'],
@@ -58,6 +64,7 @@ class ProvinceSpider(scrapy.Spider):
             解析县
         '''
         city_info = response.meta
+
         # 如果是直辖市, 没有下级县, 直接解析天气数据
         if city_info['province'] in constant.DIRECT_CITY:
             self.parse_direct_weather(response, city_info)
@@ -114,12 +121,11 @@ class ProvinceSpider(scrapy.Spider):
                 'wind_force': wind_force
             })
         self.logger.info("========province:%s=======city:%s========county:%s", meta['province'], meta['city'], meta.get('county', None))
-        self.logger.info(seven_day_weather)
 
         data = {
             'province': meta['province'],
             'city': meta['city'],
-            'county': meta['county'],
+            'county': meta.get('county', None),
             'data': seven_day_weather
         }
         self.db.insert('weather', 'wea', data)
