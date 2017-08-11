@@ -1,8 +1,8 @@
 # coding:  utf8
 
 import scrapy
-import WeatherCrawler.spiders.constant as constant
-from WeatherCrawler.db.mongo_db import MongoDB
+import weather.spiders.constant as constant
+from weather.db.mongo_db import MongoDB
 
 class ProvinceSpider(scrapy.Spider):
     '''
@@ -15,6 +15,7 @@ class ProvinceSpider(scrapy.Spider):
     def __init__(self):
         super(ProvinceSpider, self).__init__()
         self.db = MongoDB()
+        self.db.remove('weather', 'wea', {})
 
     def parse(self, response):
         '''

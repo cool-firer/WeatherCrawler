@@ -36,23 +36,25 @@ class MongoDB(object):
         db = self.client[database]
         c = db[collection]
         c.insert_one(data)
+    
+    def drop(self, database, collection):
+        '''
+            @param database: 数据库名称
+            @Param collection: 集合
+        '''
+        db = self.client[database]
+        db[collection].drop()
+    
+    def remove(self, database, collection, condition):
+        '''
+            @param database: 数据库名称
+            @param collection: 集合
+            @param condition: 条件
+        '''
+        db = self.client[database]
+        c = db[collection]
+        c.remove(condition)
 
     def query(self, sql, params=None):
         pass
-
-    def execute(self, sql, params=None):
-        pass
-
-
-    def __close(self, connect, cursor, commit=False):
-        try:
-            if commit:
-                connect.commit()
-            if cursor:
-                cursor.close()
-            if connect:
-                connect.close()
-        except Exception:
-            exstr = traceback.format_exc()
-            print(exstr)
 
