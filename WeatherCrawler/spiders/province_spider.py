@@ -1,8 +1,8 @@
 # coding:  utf8
 
 import scrapy
-import weather.spiders.constant as constant
-from weather.db.mongo_db import MongoDB
+import WeatherCrawler.spiders.constant as constant
+from WeatherCrawler.db.mongo_db import MongoDB
 
 class ProvinceSpider(scrapy.Spider):
     '''
