@@ -1,4 +1,5 @@
 #-*- coding: utf-8 -*-
+#!/usr/bin/python
 
 import datetime
 from apscheduler.schedulers.blocking import BlockingScheduler
@@ -6,16 +7,8 @@ from scrapy.crawler import CrawlerProcess
 from province_spider import ProvinceSpider
 from billiard import Process
 
-
-def remove(path=None):
-    '''
-    remove file
-    :param path:
-    :return:
-    '''
-    print('hah')
-    #TODO
-    return True
+from scrapy.utils.log import configure_logging
+configure_logging({'LOG_FORMAT': '%(levelname)s: %(message)s', 'LOG_FILE': 'schedule.log'})
 
 def _crawl(path=None):
      crawl = CrawlerProcess({
@@ -28,14 +21,16 @@ def _crawl(path=None):
 def run_crawl(path=None):
     p = Process(target=_crawl, args=['hahahahha'])
     p.start()
-    p.join()
+    #p.join()
 
+crawl2 = run_crawl
+crawl3 = run_crawl
+crawl4 = run_crawl
 
-import logging
-logging.basicConfig()
-
-scheduler = BlockingScheduler()
-scheduler.add_job(run_crawl, "interval", minutes=5)
+scheduler = BlockingScheduler(daemon=True)
+scheduler.add_job(run_crawl, "cron", hour=8, minute=30, timezone='Asia/Shanghai')
+scheduler.add_job(run_crawl, "cron", hour=12, minute=30, timezone='Asia/Shanghai')
+scheduler.add_job(run_crawl, "cron", hour=18, minute=30, timezone='Asia/Shanghai')
 
 try:
 	scheduler.start()

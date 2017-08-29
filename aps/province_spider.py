@@ -4,7 +4,9 @@ import scrapy
 import constant as constant
 from mongo_db import MongoDB
 from billiard import Process
+from my_logger import Logger
 
+import time
 
 class ProvinceSpider(scrapy.Spider):
     '''
@@ -15,7 +17,9 @@ class ProvinceSpider(scrapy.Spider):
     start_urls = ['http://www.weather.com.cn/province/']
     
     def __init__(self):
+        file_name = time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime(time.time())) + '.log'
         #self.logger = logger#logging.getLogger('weather.spider')
+        self.log = Logger('province_spider', console=False, file_name=file_name).getLogger()
         self.db = MongoDB()
         self.db.remove('weather', 'wea', {})
         super(ProvinceSpider, self).__init__()
@@ -95,7 +99,7 @@ class ProvinceSpider(scrapy.Spider):
         '''
             解析直辖市天气数据
         '''
-        #self.logger.info('provicince:%s, city:%s', meta['province'], meta['city'])
+        #self.log.info('provicince:%s, city:%s', meta['province'], meta['city'])
         self._parse_weather(response, meta)
 
 
@@ -123,7 +127,7 @@ class ProvinceSpider(scrapy.Spider):
                 'wind_direction': wind_direction,
                 'wind_force': wind_force
             })
-        self.logger.info("========province:%s=======city:%s========county:%s", meta['province'], meta['city'], meta.get('county', None))
+        self.log.info("========province:%s=======city:%s========county:%s", meta['province'], meta['city'], meta.get('county', None))
 
         data = {
             'province': meta['province'],
