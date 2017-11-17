@@ -23,9 +23,6 @@ def run_crawl(path=None):
     p.start()
     #p.join()
 
-crawl2 = run_crawl
-crawl3 = run_crawl
-crawl4 = run_crawl
 
 scheduler = BlockingScheduler(daemon=True)
 scheduler.add_job(run_crawl, "cron", hour=8, minute=30, timezone='Asia/Shanghai')

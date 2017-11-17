@@ -20,7 +20,14 @@ class ProvinceSpider(scrapy.Spider):
         file_name = time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime(time.time())) + '.log'
         #self.logger = logger#logging.getLogger('weather.spider')
         self.log = Logger('province_spider', console=False, file_name=file_name).getLogger()
-        self.db = MongoDB()
+        self.db = MongoDB(
+            auth=True,
+            host='localhost',
+            user='jc',
+            password='jc',
+            authSource='admin',
+            authMechanism='SCRAM-SHA-1')
+
         self.db.remove('weather', 'wea', {})
         super(ProvinceSpider, self).__init__()
 

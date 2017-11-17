@@ -12,9 +12,9 @@ class MongoDB(object):
     '''
     __instance = None
 
-    __connection = MongoClient('localhost', 27017)
+    #__connection = MongoClient('localhost', 27017)
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         self.client = self.__connection
 
     def __new__(cls, *args, **kwargs):
@@ -23,6 +23,16 @@ class MongoDB(object):
                 Lock.acquire()
                 if not cls.__instance:
                     cls.__instance = super(MongoDB, cls).__new__(cls, *args, **kwargs)
+                    
+                    if kwargs.get('auth', False) == False:
+                        #uri = 'mongodb://localhost:27017/'
+                        host = kwargs.get('host', 'localhost')
+                        port = kwargs.get('port', '27017')
+                        uri = 'mongodb://{host}:{port}/'.format(**{'host': host, 'port': port})
+                    else:
+                        uri = "mongodb://{user}:{password}@{host}/{authSource}?authMechanism={authMechanism}".format(**kwargs)
+                    #uri = "mongodb://jc:jc@localhost/admin?authMechanism=SCRAM-SHA-1"
+                    cls.__connection = MongoClient(uri)
             finally:
                 Lock.release()
         return cls.__instance
